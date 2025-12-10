@@ -63,7 +63,7 @@ Visit: `https://hng-stage-8-9-production.up.railway.app/api-docs`
 {
   "name": "My Test Key",
   "permissions": ["deposit", "transfer", "read"],
-  "expiresIn": "1M"
+  "expiry": "1M"
 }
 ```
 5. Click **"Execute"**
@@ -95,7 +95,7 @@ Visit: `https://hng-stage-8-9-production.up.railway.app/api-docs`
 3. Enter recipient's wallet number and amount:
 ```json
 {
-  "recipientWalletNumber": "1234567890",
+  "wallet_number": "1234567890123",
   "amount": 1000
 }
 ```
@@ -138,7 +138,7 @@ curl -X POST https://hng-stage-8-9-production.up.railway.app/keys/create \
   -d '{
     "name": "my-service",
     "permissions": ["deposit", "transfer", "read"],
-    "expiresIn": "1M"
+    "expiry": "1M"
   }'
 ```
 
@@ -166,7 +166,7 @@ curl -X POST https://hng-stage-8-9-production.up.railway.app/wallet/transfer \
   -H "x-api-key: YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "recipientWalletNumber": "1234567890",
+    "wallet_number": "1234567890123",
     "amount": 1000
   }'
 ```
@@ -203,7 +203,7 @@ curl -X GET https://hng-stage-8-9-production.up.railway.app/wallet/transactions?
 
 5. **Transfer ₦2,000 to friend:**
    - POST `/wallet/transfer` with API key
-   - Body: `{ "recipientWalletNumber": "9876543210", "amount": 2000 }`
+   - Body: `{ "wallet_number": "9876543210123", "amount": 2000 }`
    - Transfer successful!
 
 6. **View history:**

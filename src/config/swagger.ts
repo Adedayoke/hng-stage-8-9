@@ -7,11 +7,11 @@ import { config } from './env';
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
-    title: 'Wallet Service API - Stage 9',
+    title: 'Wallet Service API - Stage 8',
     version: '1.0.0',
     description: 'Secure wallet service with Paystack integration, JWT & API key authentication',
     contact: {
-      name: 'HNG Stage 9',
+      name: 'HNG Stage 8',
     },
   },
   servers: [
