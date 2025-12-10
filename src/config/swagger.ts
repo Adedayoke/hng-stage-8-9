@@ -37,6 +37,54 @@ const swaggerDefinition = {
         description: 'Enter API key created via /keys/create endpoint',
       },
     },
+    responses: {
+      Unauthorized: {
+        description: 'Authentication required or invalid token/API key',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                success: {
+                  type: 'boolean',
+                  example: false,
+                },
+                message: {
+                  type: 'string',
+                  example: 'Unauthorized',
+                },
+              },
+            },
+          },
+        },
+      },
+      ValidationError: {
+        description: 'Invalid request data',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                success: {
+                  type: 'boolean',
+                  example: false,
+                },
+                message: {
+                  type: 'string',
+                  example: 'Validation error',
+                },
+                errors: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     schemas: {
       Error: {
         type: 'object',
