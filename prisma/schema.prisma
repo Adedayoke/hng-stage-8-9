@@ -1,0 +1,119 @@
+// Prisma Schema for Wallet Service
+// This defines our database structure
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// USER MODEL
+// Stores user information from Google OAuth
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  googleId      String   @unique
+  name          String?
+  picture       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  wallet        Wallet?        // One user has one wallet
+  apiKeys       ApiKey[]       // One user can have multiple API keys
+  sentTransfers Transaction[] @relation("SenderTransactions")
+  receivedTransfers Transaction[] @relation("RecipientTransactions")
+  
+  @@map("users")
+}
+
+// WALLET MODEL
+// Each user gets exactly ONE wallet
+// Stores current balance and unique wallet number
+model Wallet {
+  id            String   @id @default(cuid())
+  walletNumber  String   @unique // Unique 13-digit number for transfers
+  balance       Decimal  @default(0) @db.Decimal(15, 2) // Precise decimal for money
+  userId        String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+  
+  @@map("wallets")
+}
+
+// TRANSACTION MODEL
+// Records all wallet activities: deposits, transfers
+// Tracks status for Paystack webhook updates
+model Transaction {
+  id              String      @id @default(cuid())
+  reference       String      @unique // Paystack reference or generated reference
+  type            TransactionType
+  amount          Decimal     @db.Decimal(15, 2)
+  status          TransactionStatus @default(PENDING)
+  description     String?
+  
+  // For deposits: walletId is the recipient
+  // For transfers: walletId is the sender, recipientWalletId is the receiver
+  walletId        String
+  recipientWalletId String?
+  
+  // Paystack specific fields
+  paystackReference String? // Original Paystack transaction reference
+  authorizationUrl  String? // Paystack payment link
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  wallet          Wallet   @relation(fields: [walletId], references: [id])
+  sender          User?    @relation("SenderTransactions", fields: [senderId], references: [id])
+  recipient       User?    @relation("RecipientTransactions", fields: [recipientId], references: [id])
+  senderId        String?
+  recipientId     String?
+  
+  @@index([reference])
+  @@index([walletId])
+  @@map("transactions")
+}
+
+// API KEY MODEL
+// For service-to-service authentication
+// Keys are HASHED in database (never store plain text!)
+model ApiKey {
+  id          String   @id @default(cuid())
+  name        String   // User-friendly name like "wallet-service"
+  keyHash     String   @unique // Hashed version of the actual key (bcrypt)
+  permissions String[] // Array: ["deposit", "transfer", "read"]
+  isActive    Boolean  @default(true)
+  expiresAt   DateTime // Converted from 1H, 1D, 1M, 1Y
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([keyHash])
+  @@index([userId, isActive])
+  @@map("api_keys")
+}
+
+// ENUMS
+// Transaction types: what kind of transaction is this?
+enum TransactionType {
+  DEPOSIT   // Money coming in via Paystack
+  TRANSFER  // Money sent to another user
+}
+
+// Transaction status: current state of the transaction
+enum TransactionStatus {
+  PENDING   // Waiting for payment/confirmation
+  SUCCESS   // Completed successfully
+  FAILED    // Payment failed or transfer rejected
+}
