@@ -29,12 +29,18 @@ export async function initializeTransaction(
     // WHY: Paystack uses kobo, not naira
     const amountInKobo = Math.round(amount * 100);
 
-    const response = await paystackApi.post('/transaction/initialize', {
+    const payload: any = {
       email,
       amount: amountInKobo,
       reference,
-      callback_url: `${config.frontendUrl}/payment/callback`, // Optional: redirect after payment
-    });
+    };
+
+    // Only add callback_url if FRONTEND_URL is set and not default
+    if (config.frontendUrl && config.frontendUrl !== 'http://localhost:5173') {
+      payload.callback_url = `${config.frontendUrl}/payment/callback`;
+    }
+
+    const response = await paystackApi.post('/transaction/initialize', payload);
 
     return {
       success: true,
