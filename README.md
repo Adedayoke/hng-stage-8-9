@@ -32,9 +32,9 @@ The Swagger documentation includes:
 
 ---
 
-## 🎯 Complete Usage Guide
+## 🎯 How to Test the API
 
-### Method 1: Using Swagger UI (Recommended)
+### Using Swagger UI (Recommended)
 
 This is the **easiest way** to test all endpoints without writing any code!
 
@@ -107,108 +107,15 @@ Visit: `https://hng-stage-8-9-production.up.railway.app/api-docs`
 2. Click **"Try it out"** → **"Execute"**
 3. See all your deposits and transfers with timestamps
 
----
+#### Using API Key Authentication (Alternative)
 
-### Method 2: Using API Key Authentication in Swagger
-
-#### After Creating an API Key:
+After creating an API key:
 1. Click the **"Authorize"** button again
 2. In the **apiKeyAuth** field, paste your API key (e.g., `sk_live_1234567890abcdef`)
 3. Click **"Authorize"** then **"Close"**
 4. Now you can use the API key instead of JWT for wallet operations
 
 **Note:** API key authentication only works for **wallet endpoints**, not for managing API keys themselves.
-
----
-
-### Method 3: Using cURL or Postman (Local/Remote)
-
-#### Step 1: Get Your JWT Token
-Visit in browser:
-```
-https://hng-stage-8-9-production.up.railway.app/auth/google
-```
-Copy the token from the redirect URL.
-
-#### Step 2: Create API Key
-```bash
-curl -X POST https://hng-stage-8-9-production.up.railway.app/keys/create \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "my-service",
-    "permissions": ["deposit", "transfer", "read"],
-    "expiry": "1M"
-  }'
-```
-
-**Save the returned API key!**
-
-#### Step 3: Deposit Money (Using API Key)
-```bash
-curl -X POST https://hng-stage-8-9-production.up.railway.app/wallet/deposit \
-  -H "x-api-key: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"amount": 5000}'
-```
-
-You'll get a Paystack URL. Open it in your browser to complete payment.
-
-#### Step 4: Check Balance
-```bash
-curl -X GET https://hng-stage-8-9-production.up.railway.app/wallet/balance \
-  -H "x-api-key: YOUR_API_KEY"
-```
-
-#### Step 5: Transfer Funds
-```bash
-curl -X POST https://hng-stage-8-9-production.up.railway.app/wallet/transfer \
-  -H "x-api-key: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "wallet_number": "1234567890123",
-    "amount": 1000
-  }'
-```
-
-#### Step 6: View Transactions
-```bash
-curl -X GET https://hng-stage-8-9-production.up.railway.app/wallet/transactions?page=1&limit=20 \
-  -H "x-api-key: YOUR_API_KEY"
-```
-
----
-
-### Complete End-to-End Flow Example
-
-**Scenario:** User signs in, creates API key, deposits money, transfers to friend
-
-1. **Sign in with Google:**
-   - Visit: `/auth/google`
-   - Get JWT token
-
-2. **Create API key for automation:**
-   - POST `/keys/create` with JWT
-   - Save the returned API key: `sk_live_abc123...`
-
-3. **Deposit ₦5,000:**
-   - POST `/wallet/deposit` with API key
-   - Get Paystack URL: `https://checkout.paystack.com/xyz`
-   - Complete payment in browser
-   - Webhook automatically credits your wallet
-
-4. **Check balance:**
-   - GET `/wallet/balance` with API key
-   - Response: `{ "balance": "5000.00", "walletNumber": "1234567890" }`
-
-5. **Transfer ₦2,000 to friend:**
-   - POST `/wallet/transfer` with API key
-   - Body: `{ "wallet_number": "9876543210123", "amount": 2000 }`
-   - Transfer successful!
-
-6. **View history:**
-   - GET `/wallet/transactions` with API key
-   - See both deposit (+5000) and transfer (-2000)
 
 ---
 
@@ -590,29 +497,6 @@ npm start
 - `transfer` - Can transfer funds to other wallets
 - `read` - Can view balance and transaction history
 - API keys can have **any combination** of these permissions
-
-## 📝 Environment Setup Guide
-
-### 1. PostgreSQL Database
-```bash
-# Using Docker
-docker run --name wallet-db -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres
-
-# Connection string
-DATABASE_URL="postgresql://postgres:password@localhost:5432/wallet_service"
-```
-
-### 2. Google OAuth
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create project
-3. Enable Google+ API
-4. Create OAuth 2.0 credentials
-5. Add authorized redirect: `http://localhost:3000/auth/google/callback`
-
-### 3. Paystack
-1. Sign up at [Paystack](https://paystack.com/)
-2. Get API keys from Settings > API Keys & Webhooks
-3. Add webhook URL in dashboard
 
 ## 🚨 Troubleshooting
 
