@@ -1,4 +1,4 @@
-# Wallet Service API - Stage 9
+# Wallet Service API - Stage 8
 
 A secure wallet service with Paystack integration, JWT authentication, and API key management.
 
@@ -630,8 +630,6 @@ DATABASE_URL="postgresql://postgres:password@localhost:5432/wallet_service"
 - Check Paystack signature verification
 - View Paystack dashboard webhook logs
 
-## 👨‍💻 Author
+---
 
-Native Dev
-
-HNG Stage 9 Task Submission
+**HNG Stage 8 Task Submission**

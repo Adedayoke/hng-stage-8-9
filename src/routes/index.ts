@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
     success: true,
     message: 'Welcome to Wallet Service API',
     version: '1.0.0',
-    stage: 'HNG Stage 9',
+    stage: 'HNG Stage 8',
     description: 'Secure wallet service with Paystack integration, JWT & API key authentication',
     features: [
       'Google OAuth authentication',
