@@ -44,10 +44,10 @@ router.use(authenticate);
  *                   type: string
  *                   enum: [deposit, transfer, read]
  *                 example: ["deposit", "transfer", "read"]
- *               expiresIn:
+ *               expiry:
  *                 type: string
  *                 description: Expiry duration (1H, 1D, 1M, 1Y)
- *                 example: 1Y
+ *                 example: 1D
  *     responses:
  *       201:
  *         description: API key created successfully
@@ -56,24 +56,31 @@ router.use(authenticate);
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 message:
  *                   type: string
- *                   example: API key created successfully
- *                 apiKey:
+ *                   example: API key created successfully. Save it now - it won't be shown again!
+ *                 data:
  *                   type: object
  *                   properties:
  *                     id:
  *                       type: string
  *                     name:
  *                       type: string
- *                     key:
+ *                     api_key:
  *                       type: string
  *                       description: Plain API key (shown only once)
+ *                       example: sk_live_1234567890abcdef
  *                     permissions:
  *                       type: array
  *                       items:
  *                         type: string
- *                     expiresAt:
+ *                     expires_at:
+ *                       type: string
+ *                       format: date-time
+ *                     created_at:
  *                       type: string
  *                       format: date-time
  *       400:
@@ -98,27 +105,46 @@ router.post('/create', createApiKey);
  *           schema:
  *             type: object
  *             required:
- *               - oldKeyId
+ *               - expired_key_id
  *             properties:
- *               oldKeyId:
+ *               expired_key_id:
  *                 type: string
  *                 description: ID of the expired key to replace
- *               expiresIn:
+ *               expiry:
  *                 type: string
  *                 description: New expiry duration (1H, 1D, 1M, 1Y)
- *                 example: 1Y
+ *                 example: 1D
  *     responses:
- *       200:
+ *       201:
  *         description: API key rolled over successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 message:
  *                   type: string
- *                 newApiKey:
+ *                   example: API key rolled over successfully
+ *                 data:
  *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     api_key:
+ *                       type: string
+ *                       description: New plain API key (shown only once)
+ *                     permissions:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     expires_at:
+ *                       type: string
+ *                       format: date-time
  *       400:
  *         description: Key not expired or not found
  *       401:
@@ -142,24 +168,42 @@ router.post('/rollover', rolloverApiKey);
  *             schema:
  *               type: object
  *               properties:
- *                 apiKeys:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                       name:
- *                         type: string
- *                       permissions:
- *                         type: array
- *                         items:
- *                           type: string
- *                       expiresAt:
- *                         type: string
- *                         format: date-time
- *                       isRevoked:
- *                         type: boolean
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     keys:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                           name:
+ *                             type: string
+ *                           permissions:
+ *                             type: array
+ *                             items:
+ *                               type: string
+ *                           isActive:
+ *                             type: boolean
+ *                           expiresAt:
+ *                             type: string
+ *                             format: date-time
+ *                           createdAt:
+ *                             type: string
+ *                             format: date-time
+ *                           status:
+ *                             type: string
+ *                             enum: [active, expired, revoked]
+ *                     total:
+ *                       type: integer
+ *                       example: 3
+ *                     active:
+ *                       type: integer
+ *                       example: 2
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  */
@@ -188,8 +232,12 @@ router.get('/list', listApiKeys);
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 message:
  *                   type: string
+ *                   example: API key revoked successfully
  *       404:
  *         description: API key not found
  *       401:

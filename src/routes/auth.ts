@@ -59,6 +59,9 @@ router.get(
  *                           type: string
  *                         name:
  *                           type: string
+ *                         picture:
+ *                           type: string
+ *                           description: Google profile picture URL
  *       401:
  *         description: Authentication failed
  */

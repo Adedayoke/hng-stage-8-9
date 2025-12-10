@@ -37,11 +37,6 @@ const router = Router();
  *                 type: number
  *                 description: Amount in Naira (minimum ₦100)
  *                 example: 5000
- *               email:
- *                 type: string
- *                 format: email
- *                 description: Optional email for Paystack
- *                 example: user@example.com
  *     responses:
  *       200:
  *         description: Paystack payment initialized
@@ -50,20 +45,23 @@ const router = Router();
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 message:
  *                   type: string
- *                   example: Payment initialized
+ *                   example: Payment initialized. Complete payment using the link.
  *                 data:
  *                   type: object
  *                   properties:
+ *                     reference:
+ *                       type: string
+ *                       example: TXN-1702200000-ABC123
  *                     authorization_url:
  *                       type: string
  *                       example: https://checkout.paystack.com/abc123
  *                     access_code:
  *                       type: string
- *                     reference:
- *                       type: string
- *                       example: TXN-1702200000-ABC123
  *       400:
  *         $ref: '#/components/responses/ValidationError'
  *       401:
@@ -115,8 +113,34 @@ router.post(
  *     responses:
  *       200:
  *         description: Deposit status retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     reference:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                       enum: [pending, success, failed]
+ *                     amount:
+ *                       type: number
+ *                     type:
+ *                       type: string
+ *                       enum: [deposit, transfer]
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Unauthorized - not your transaction
  *       404:
  *         description: Transaction not found
  */
@@ -139,15 +163,18 @@ router.get('/deposit/:reference/status', authenticate, requirePermission('read')
  *             schema:
  *               type: object
  *               properties:
- *                 walletNumber:
+ *                 wallet_number:
  *                   type: string
- *                   example: "1234567890"
+ *                   example: "1234567890123"
  *                 balance:
- *                   type: string
- *                   example: "5000.00"
- *                 currency:
- *                   type: string
- *                   example: NGN
+ *                   type: object
+ *                   properties:
+ *                     wallet_number:
+ *                       type: string
+ *                       example: "1234567890123"
+ *                     balance:
+ *                       type: number
+ *                       example: 5000.00
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       404:
@@ -171,13 +198,13 @@ router.get('/balance', authenticate, requirePermission('read'), getBalance);
  *           schema:
  *             type: object
  *             required:
- *               - recipientWalletNumber
+ *               - wallet_number
  *               - amount
  *             properties:
- *               recipientWalletNumber:
+ *               wallet_number:
  *                 type: string
- *                 description: 10-digit wallet number of recipient
- *                 example: "1234567890"
+ *                 description: 13-digit wallet number of recipient
+ *                 example: "1234567890123"
  *               amount:
  *                 type: number
  *                 description: Amount in Naira (minimum ₦1)
@@ -190,11 +217,24 @@ router.get('/balance', authenticate, requirePermission('read'), getBalance);
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 status:
+ *                   type: string
+ *                   example: success
  *                 message:
  *                   type: string
- *                   example: Transfer successful
- *                 transaction:
+ *                   example: Transfer completed successfully
+ *                 data:
  *                   type: object
+ *                   properties:
+ *                     amount:
+ *                       type: number
+ *                     recipient:
+ *                       type: string
+ *                     reference:
+ *                       type: string
  *       400:
  *         $ref: '#/components/responses/ValidationError'
  *       401:
@@ -234,28 +274,27 @@ router.post('/transfer', authenticate, requirePermission('transfer'), transferFu
  *             schema:
  *               type: object
  *               properties:
- *                 transactions:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
  *                   type: array
  *                   items:
  *                     type: object
  *                     properties:
- *                       id:
- *                         type: string
- *                       reference:
- *                         type: string
  *                       type:
  *                         type: string
- *                         enum: [DEPOSIT, TRANSFER]
+ *                         enum: [deposit, transfer]
  *                       amount:
- *                         type: string
+ *                         type: number
  *                       status:
  *                         type: string
- *                         enum: [PENDING, SUCCESS, FAILED]
- *                       createdAt:
+ *                         enum: [pending, success, failed]
+ *                       description:
+ *                         type: string
+ *                       date:
  *                         type: string
  *                         format: date-time
- *                 pagination:
- *                   type: object
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  */
