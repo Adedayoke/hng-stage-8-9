@@ -14,6 +14,21 @@ A secure wallet service with Paystack integration, JWT authentication, and API k
 - ✅ Transaction history
 - ✅ Secure API key storage (bcrypt hashing)
 - ✅ Paystack webhook signature verification
+- ✅ **Swagger API Documentation**
+
+## 📚 API Documentation
+
+**Swagger UI:** `/api-docs`
+
+Access interactive API documentation at:
+- Local: `http://localhost:3000/api-docs`
+- Production: `https://your-app.up.railway.app/api-docs`
+
+The Swagger documentation includes:
+- All API endpoints with request/response examples
+- JWT Bearer authentication
+- API Key authentication (x-api-key header)
+- Try-it-out functionality
 
 ## 🚀 Getting Started
 
@@ -402,10 +417,8 @@ DATABASE_URL="postgresql://postgres:password@localhost:5432/wallet_service"
 - Check Paystack signature verification
 - View Paystack dashboard webhook logs
 
-## 📄 License
-
-ISC
-
 ## 👨‍💻 Author
+
+Native Dev
 
 HNG Stage 9 Task Submission

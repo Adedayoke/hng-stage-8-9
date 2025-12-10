@@ -4,14 +4,18 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import swaggerUi from 'swagger-ui-express';
 import passport from './config/passport';
 import routes from './routes';
+import { swaggerSpec } from './config/swagger';
 
 const app = express();
 
 // Security middleware
 // WHY: Helmet sets various HTTP headers for security
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable for Swagger UI
+}));
 
 // CORS configuration
 // WHY: Allow frontend to make requests to our API
@@ -35,6 +39,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // Initialize Passport
 app.use(passport.initialize());
+
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Wallet Service API Docs',
+}));
 
 // Routes
 app.use('/', routes);

@@ -8,8 +8,15 @@ import { googleCallback } from '../controllers/authController';
 const router = Router();
 
 /**
- * GET /auth/google
- * Initiates Google OAuth flow
+ * @swagger
+ * /auth/google:
+ *   get:
+ *     tags: [Authentication]
+ *     summary: Initiate Google OAuth login
+ *     description: Redirects to Google sign-in page
+ *     responses:
+ *       302:
+ *         description: Redirects to Google OAuth
  */
 router.get(
   '/google',
@@ -17,9 +24,43 @@ router.get(
 );
 
 /**
- * GET /auth/google/callback
- * Handles Google OAuth callback
- * Returns JWT token
+ * @swagger
+ * /auth/google/callback:
+ *   get:
+ *     tags: [Authentication]
+ *     summary: Google OAuth callback
+ *     description: Handles Google OAuth callback and returns JWT token
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Login successful
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       description: JWT token
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         email:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *       401:
+ *         description: Authentication failed
  */
 router.get(
   '/google/callback',
