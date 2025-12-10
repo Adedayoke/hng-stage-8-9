@@ -21,8 +21,8 @@ A secure wallet service with Paystack integration, JWT authentication, and API k
 **Swagger UI:** `/api-docs`
 
 Access interactive API documentation at:
-- Local: `http://localhost:3000/api-docs`
-- Production: `https://your-app.up.railway.app/api-docs`
+- **Production:** `https://hng-stage-8-9-production.up.railway.app/api-docs`
+- **Local:** `http://localhost:3000/api-docs`
 
 The Swagger documentation includes:
 - All API endpoints with request/response examples
@@ -30,7 +30,189 @@ The Swagger documentation includes:
 - API Key authentication (x-api-key header)
 - Try-it-out functionality
 
-## 🚀 Getting Started
+---
+
+## 🎯 Complete Usage Guide
+
+### Method 1: Using Swagger UI (Recommended)
+
+This is the **easiest way** to test all endpoints without writing any code!
+
+#### Step 1: Access Swagger
+Visit: `https://hng-stage-8-9-production.up.railway.app/api-docs`
+
+#### Step 2: Authenticate with Google
+1. In your browser, visit: `https://hng-stage-8-9-production.up.railway.app/auth/google`
+2. Sign in with your Google account
+3. You'll be redirected with a JWT token in the URL
+4. **Copy the token** from the response (it looks like: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`)
+
+#### Step 3: Authorize in Swagger
+1. Go back to Swagger UI
+2. Click the **"Authorize"** button (🔒 lock icon at the top right)
+3. In the **bearerAuth** field, paste your JWT token
+4. Click **"Authorize"** then **"Close"**
+5. You're now authenticated! ✅
+
+#### Step 4: Create an API Key (Optional)
+1. Scroll to **"API Keys"** section in Swagger
+2. Click on **POST /keys/create**
+3. Click **"Try it out"**
+4. Edit the request body:
+```json
+{
+  "name": "My Test Key",
+  "permissions": ["deposit", "transfer", "read"],
+  "expiresIn": "1M"
+}
+```
+5. Click **"Execute"**
+6. **Save the API key** from the response - you won't see it again!
+
+#### Step 5: Test Wallet Deposit
+1. Scroll to **"Wallet"** section
+2. Click on **POST /wallet/deposit**
+3. Click **"Try it out"**
+4. Enter amount in Naira:
+```json
+{
+  "amount": 5000
+}
+```
+5. Click **"Execute"**
+6. Copy the `authorization_url` from the response
+7. Open it in a new tab to complete payment on Paystack
+8. After payment, your wallet is **automatically credited** via webhook
+
+#### Step 6: Check Your Balance
+1. In Swagger, click **GET /wallet/balance**
+2. Click **"Try it out"** → **"Execute"**
+3. See your balance and wallet number!
+
+#### Step 7: Transfer Funds
+1. Click **POST /wallet/transfer**
+2. Click **"Try it out"**
+3. Enter recipient's wallet number and amount:
+```json
+{
+  "recipientWalletNumber": "1234567890",
+  "amount": 1000
+}
+```
+4. Click **"Execute"**
+5. Transfer complete! ✅
+
+#### Step 8: View Transaction History
+1. Click **GET /wallet/transactions**
+2. Click **"Try it out"** → **"Execute"**
+3. See all your deposits and transfers with timestamps
+
+---
+
+### Method 2: Using API Key Authentication in Swagger
+
+#### After Creating an API Key:
+1. Click the **"Authorize"** button again
+2. In the **apiKeyAuth** field, paste your API key (e.g., `sk_live_1234567890abcdef`)
+3. Click **"Authorize"** then **"Close"**
+4. Now you can use the API key instead of JWT for wallet operations
+
+**Note:** API key authentication only works for **wallet endpoints**, not for managing API keys themselves.
+
+---
+
+### Method 3: Using cURL or Postman (Local/Remote)
+
+#### Step 1: Get Your JWT Token
+Visit in browser:
+```
+https://hng-stage-8-9-production.up.railway.app/auth/google
+```
+Copy the token from the redirect URL.
+
+#### Step 2: Create API Key
+```bash
+curl -X POST https://hng-stage-8-9-production.up.railway.app/keys/create \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-service",
+    "permissions": ["deposit", "transfer", "read"],
+    "expiresIn": "1M"
+  }'
+```
+
+**Save the returned API key!**
+
+#### Step 3: Deposit Money (Using API Key)
+```bash
+curl -X POST https://hng-stage-8-9-production.up.railway.app/wallet/deposit \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 5000}'
+```
+
+You'll get a Paystack URL. Open it in your browser to complete payment.
+
+#### Step 4: Check Balance
+```bash
+curl -X GET https://hng-stage-8-9-production.up.railway.app/wallet/balance \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+#### Step 5: Transfer Funds
+```bash
+curl -X POST https://hng-stage-8-9-production.up.railway.app/wallet/transfer \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipientWalletNumber": "1234567890",
+    "amount": 1000
+  }'
+```
+
+#### Step 6: View Transactions
+```bash
+curl -X GET https://hng-stage-8-9-production.up.railway.app/wallet/transactions?page=1&limit=20 \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+---
+
+### Complete End-to-End Flow Example
+
+**Scenario:** User signs in, creates API key, deposits money, transfers to friend
+
+1. **Sign in with Google:**
+   - Visit: `/auth/google`
+   - Get JWT token
+
+2. **Create API key for automation:**
+   - POST `/keys/create` with JWT
+   - Save the returned API key: `sk_live_abc123...`
+
+3. **Deposit ₦5,000:**
+   - POST `/wallet/deposit` with API key
+   - Get Paystack URL: `https://checkout.paystack.com/xyz`
+   - Complete payment in browser
+   - Webhook automatically credits your wallet
+
+4. **Check balance:**
+   - GET `/wallet/balance` with API key
+   - Response: `{ "balance": "5000.00", "walletNumber": "1234567890" }`
+
+5. **Transfer ₦2,000 to friend:**
+   - POST `/wallet/transfer` with API key
+   - Body: `{ "recipientWalletNumber": "9876543210", "amount": 2000 }`
+   - Transfer successful!
+
+6. **View history:**
+   - GET `/wallet/transactions` with API key
+   - See both deposit (+5000) and transfer (-2000)
+
+---
+
+## 🚀 Getting Started (Local Development)
 
 ### Prerequisites
 
@@ -325,32 +507,36 @@ src/
 └── server.ts        # Server entry point
 ```
 
-## 🧪 Testing
+## 🔑 Authentication Methods
 
-### Using cURL
+### JWT Authentication (User Access)
+- **Use for:** Managing API keys, all wallet operations
+- **How to get:** Sign in via Google OAuth at `/auth/google`
+- **Header:** `Authorization: Bearer <token>`
+- **Expires:** 7 days
 
-**Login with Google:**
-Visit `http://localhost:3000/auth/google` in browser
+### API Key Authentication (Service Access)
+- **Use for:** Wallet operations only (deposit, transfer, balance, transactions)
+- **How to get:** Create via `/keys/create` endpoint with JWT
+- **Header:** `x-api-key: <key>`
+- **Expires:** Based on your chosen duration (1H, 1D, 1M, 1Y)
+- **Permissions:** Granular control (deposit, transfer, read)
 
-**Create API Key:**
-```bash
-curl -X POST http://localhost:3000/keys/create \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "test-service",
-    "permissions": ["read", "deposit"],
-    "expiry": "1D"
-  }'
-```
+### Which Authentication to Use?
 
-**Deposit with API Key:**
-```bash
-curl -X POST http://localhost:3000/wallet/deposit \
-  -H "x-api-key: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"amount": 5000}'
-```
+| Endpoint | JWT | API Key | Notes |
+|----------|-----|---------|-------|
+| `/auth/google` | ❌ | ❌ | Public - starts OAuth flow |
+| `/auth/google/callback` | ❌ | ❌ | Public - returns JWT |
+| `/keys/create` | ✅ | ❌ | JWT only |
+| `/keys/list` | ✅ | ❌ | JWT only |
+| `/keys/rollover` | ✅ | ❌ | JWT only |
+| `/keys/:id/revoke` | ✅ | ❌ | JWT only |
+| `/wallet/deposit` | ✅ | ✅ | Either works (needs `deposit` permission) |
+| `/wallet/balance` | ✅ | ✅ | Either works (needs `read` permission) |
+| `/wallet/transfer` | ✅ | ✅ | Either works (needs `transfer` permission) |
+| `/wallet/transactions` | ✅ | ✅ | Either works (needs `read` permission) |
+| `/wallet/paystack/webhook` | ❌ | ❌ | Paystack only - signature verified |
 
 ## 🔧 Development
 
@@ -372,11 +558,38 @@ npm start
 
 ## ⚠️ Important Notes
 
-1. **Webhook URL**: Configure in Paystack Dashboard: `https://yourdomain.com/wallet/paystack/webhook`
-2. **API Keys**: Only shown once during creation - save immediately!
-3. **Max Keys**: Maximum 5 active API keys per user
-4. **Wallet Crediting**: ONLY webhooks credit wallets, not manual verification
-5. **Expiry Format**: Must be `1H`, `1D`, `1M`, or `1Y`
+### Amounts & Kobo Handling
+- **All amounts in the API are in Naira** (e.g., 5000 = ₦5,000)
+- Internally, amounts are converted to **kobo** for Paystack (multiply by 100)
+- Webhooks convert back to Naira (divide by 100)
+- Minimum deposit: **₦100**
+- Minimum transfer: **₦1**
+
+### API Keys
+- **Shown only once** during creation - save immediately!
+- Maximum **5 active keys** per user
+- Can be revoked anytime via `/keys/:id/revoke`
+- Expired keys can be rolled over via `/keys/rollover`
+- Each key has specific **permissions** (deposit, transfer, read)
+
+### Wallet Operations
+- Each user gets **one wallet** automatically on sign-up
+- Wallet numbers are **10 digits** and unique
+- Deposits require **Paystack payment** - no manual crediting
+- Transfers are **atomic** - either both debit and credit succeed, or neither
+- **Webhook handles crediting** - don't verify manually
+
+### Webhooks
+- Configure in Paystack Dashboard: `https://hng-stage-8-9-production.up.railway.app/wallet/paystack/webhook`
+- Signature is **automatically verified** (HMAC SHA512)
+- Only `charge.success` events credit wallets
+- Duplicate events are **ignored** (idempotent)
+
+### Permissions System
+- `deposit` - Can initiate Paystack deposits
+- `transfer` - Can transfer funds to other wallets
+- `read` - Can view balance and transaction history
+- API keys can have **any combination** of these permissions
 
 ## 📝 Environment Setup Guide
 
